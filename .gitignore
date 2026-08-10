@@ -1,5 +1,4 @@
 *.csv
 
-!images/
 images/*
 !images/.gitkeep
