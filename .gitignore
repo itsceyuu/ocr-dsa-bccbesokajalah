@@ -3,4 +3,4 @@
 
 # Tetap track notebook utama dan file aturan ini.
 !.gitignore
-!eda_ocr.ipynb
+!.ipynb
