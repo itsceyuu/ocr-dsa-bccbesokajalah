@@ -1,6 +1,5 @@
-# Abaikan semua file secara default.
-*
+.csv
 
-# Tetap track notebook utama dan file aturan ini.
-!.gitignore
-!.ipynb
+!images/
+images/*
+!images/.gitkeep
