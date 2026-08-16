@@ -1,5 +1,9 @@
-*.csv
+# Generated/data files
+*.[cC][sS][vV]
+*.[jJ][pP][gG]
+*.[jJ][sS][oO][nN]
 
+# Keep directory placeholders tracked while ignoring their contents.
 images/*
 preprocessed/*
 !**/.gitkeep
