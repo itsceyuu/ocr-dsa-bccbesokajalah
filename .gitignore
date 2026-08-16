@@ -2,3 +2,9 @@
 
 images/*
 !images/.gitkeep
+__pycache__/
+*.py[cod]
+.venv/
+data/
+reports/malaysia/*.json
+reports/malaysia/comparison/
