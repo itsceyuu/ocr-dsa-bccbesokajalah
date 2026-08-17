@@ -5,5 +5,10 @@
 
 # Keep directory placeholders tracked while ignoring their contents.
 images/*
-preprocessed/*
-!**/.gitkeep
+!images/.gitkeep
+__pycache__/
+*.py[cod]
+.venv/
+data/
+reports/malaysia/*.json
+reports/malaysia/comparison/

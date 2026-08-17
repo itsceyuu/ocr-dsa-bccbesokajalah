@@ -1,0 +1,23 @@
+[project]
+name = "compfest-dsa-identity-ocr"
+version = "0.1.0"
+description = "Leakage-aware train/validation/test splits and OCR baselines for the COMPFEST 18 DSA final project"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "Pillow>=10.0",
+]
+
+[project.optional-dependencies]
+ocr = [
+    "pytesseract>=0.3.13",
+    "easyocr>=1.7.2",
+    "transformers>=4.40",
+    "accelerate>=0.30",
+    "sentencepiece>=0.2",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
