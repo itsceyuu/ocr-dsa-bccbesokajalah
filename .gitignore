@@ -2,13 +2,16 @@
 *.[cC][sS][vV]
 *.[jJ][pP][gG]
 *.[jJ][sS][oO][nN]
-
-# Keep directory placeholders tracked while ignoring their contents.
-images/*
-!images/.gitkeep
+*.csv
 __pycache__/
 *.py[cod]
 .venv/
 data/
 reports/malaysia/*.json
 reports/malaysia/comparison/
+
+# Keep directory placeholders tracked while ignoring their contents.
+images/*
+preprocessed/*
+!**/.gitkeep
+!images/.gitkeep
