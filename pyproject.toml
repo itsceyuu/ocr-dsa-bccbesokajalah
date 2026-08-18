@@ -12,9 +12,8 @@ dependencies = [
 ocr = [
     "pytesseract>=0.3.13",
     "easyocr>=1.7.2",
-    "transformers>=4.40",
-    "accelerate>=0.30",
-    "sentencepiece>=0.2",
+    "paddleocr>=2.7",
+    "paddlepaddle>=2.6",
 ]
 
 [tool.ruff]

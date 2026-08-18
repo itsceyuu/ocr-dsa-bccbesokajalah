@@ -9,7 +9,6 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
 
-
 FIELDS = ("name", "birth_date", "address")
 SPLITS = ("train", "val", "test")
 
@@ -25,23 +24,11 @@ class Record:
         return asdict(self)
 
 
-def is_malaysian_record(record: Record) -> bool:
-    """Select the Malaysian subset in this export.
-
-    The supplied annotations contain addresses for all 112 Malaysian
-    MyKad/MyKid rows (image_001 through image_112) and blank addresses for the
-    international specimen-card rows. This is an annotation-level selector,
-    not a visual guess from the image.
-    """
-
-    return bool(record.address)
-
-
 def _parse_csv_row(row: list[str]) -> list[str]:
     """Handle both normal rows and the first 131 rows in the supplied CSV.
 
     The first portion of the provided export is wrapped in one extra pair of
-    quotes, so ``csv.reader`` returns one cell for those rows.  Parsing that
+    quotes, so ``csv.reader`` returns one cell for those rows. Parsing that
     cell again recovers the same four columns as the rest of the file.
     """
 
@@ -51,6 +38,8 @@ def _parse_csv_row(row: list[str]) -> list[str]:
 
 
 def read_ground_truth(path: str | Path) -> list[Record]:
+    """Read every row of the dataset's ground truth. No filtering, no subset."""
+
     path = Path(path)
     with path.open(newline="", encoding="utf-8-sig") as handle:
         reader = csv.reader(handle)

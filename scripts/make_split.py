@@ -9,20 +9,18 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from ocr_baseline.data import is_malaysian_record, make_group_split, read_ground_truth
+from ocr_baseline.data import make_group_split, read_ground_truth
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Create a deterministic identity-level split")
+    parser = argparse.ArgumentParser(description="Create a deterministic identity-level split of the full dataset")
     parser.add_argument("--ground-truth", default="data/raw/ground_truth.csv")
     parser.add_argument("--output-dir", default="data/splits")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--subset", choices=["all", "malaysia"], default="all")
     args = parser.parse_args()
 
+    # No subset filtering: the guideline requires using the whole dataset.
     records = read_ground_truth(args.ground_truth)
-    if args.subset == "malaysia":
-        records = [record for record in records if is_malaysian_record(record)]
     splits = make_group_split(records, seed=args.seed)
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -35,7 +33,6 @@ def main() -> None:
 
     summary = {
         "seed": args.seed,
-        "subset": args.subset,
         "total": len(records),
         "unique_identities": len({f"{r.name}\x1f{r.birth_date}" for r in records}),
         "splits": {

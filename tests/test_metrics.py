@@ -15,3 +15,7 @@ class OCRMetricTest(unittest.TestCase):
     def test_empty_reference_counts_insertions(self):
         self.assertEqual(character_error_rate("", "OCR"), 1.0)
         self.assertEqual(word_error_rate("", "OCR TEXT"), 1.0)
+
+
+if __name__ == "__main__":
+    unittest.main()

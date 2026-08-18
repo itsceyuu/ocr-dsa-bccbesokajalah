@@ -1,17 +1,9 @@
-# Generated/data files
-*.[cC][sS][vV]
-*.[jJ][pP][gG]
-*.[jJ][sS][oO][nN]
-*.csv
+# Raw/derived data and generated reports are never committed: identity-card
+# PII (names, addresses, birth dates, OCR transcripts) shouldn't land in git.
+data/
+reports/
+
 __pycache__/
 *.py[cod]
 .venv/
-data/
-reports/malaysia/*.json
-reports/malaysia/comparison/
-
-# Keep directory placeholders tracked while ignoring their contents.
-images/*
-preprocessed/*
-!**/.gitkeep
-!images/.gitkeep
+.DS_Store
