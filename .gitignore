@@ -1,9 +1,13 @@
 # Raw/derived data and generated reports are never committed: identity-card
 # PII (names, addresses, birth dates, OCR transcripts) shouldn't land in git.
+# reports/* (not reports/) so the negation below still recurses into it.
 data/
-reports/
+reports/*
+# ...except the experiment log: aggregate metrics only, no predictions/PII.
+!reports/experiments.jsonl
 
 __pycache__/
 *.py[cod]
+*.egg-info/
 .venv/
 .DS_Store

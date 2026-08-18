@@ -113,7 +113,8 @@ class PaddleOCREngine(BaseEngine):
         import numpy as np
 
         result = self.reader.ocr(np.asarray(image.convert("RGB")), cls=True)
-        detections = result[0] if result else []
+        # PaddleOCR returns [None] (not []) for a page with zero detections.
+        detections = (result[0] if result else None) or []
         blocks = _sort_reading_order(
             [
                 OCRBlock(

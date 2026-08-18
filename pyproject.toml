@@ -20,3 +20,8 @@ ocr = [
 line-length = 100
 target-version = "py310"
 
+# CPU-only torch for easyocr: this dataset (732 images) doesn't need GPU
+# speed, and the CUDA wheels are several GB we don't have disk for.
+# Install with: uv pip install -e '.[ocr]' --torch-backend cpu
+
+
