@@ -24,8 +24,13 @@ _MONTHS = {
 _ISO_DATE_RE = re.compile(r"\b(?P<y>\d{4})[.\-/](?P<m>\d{2})[.\-/](?P<d>\d{2})\b")
 # DD MON YYYY, e.g. "22 JUN 1969"
 _TEXT_MONTH_RE = re.compile(r"\b(?P<d>\d{1,2})[.\- ]+(?P<mon>[A-Z]{3,9})\.?[.\- ]+(?P<y>\d{4})\b")
-# DD.MM.YYYY / DD/MM/YYYY / DD-MM-YY etc (most European/MyKad documents)
+# DD.MM.YYYY / DD/MM/YYYY / DD-MM-YY etc (most European documents)
 _NUMERIC_DATE_RE = re.compile(r"\b(?P<a>\d{1,2})[.\-/](?P<b>\d{1,2})[.\-/](?P<c>\d{2,4})\b")
+# Malaysian MyKad ID number: birth date is the first 6 digits (YYMMDD),
+# e.g. "001230-11-0470" -- most Malaysian cards never print the date any
+# other way, so without this the date is simply not on the card as far as
+# a plain calendar-date regex is concerned.
+_MYKAD_ID_RE = re.compile(r"\b(?P<y>\d{2})(?P<m>\d{2})(?P<d>\d{2})-\d{2}-\d{4}\b")
 
 _ADDRESS_KEYWORDS = (
     "JALAN", "KAMPUNG", "TAMAN", "STREET", "STRASSE", "AVENUE", "ROAD", "RUA", "VIA",
@@ -47,6 +52,14 @@ def extract_date(text: str) -> str:
     """Find the first plausible calendar date in OCR text, many formats."""
 
     text = text.upper()
+
+    match = _MYKAD_ID_RE.search(text)
+    if match:
+        yy, mm, dd = int(match["y"]), int(match["m"]), int(match["d"])
+        year = 2000 + yy if yy <= date.today().year % 100 else 1900 + yy
+        result = _valid_iso_date(year, mm, dd)
+        if result:
+            return result
 
     match = _ISO_DATE_RE.search(text)
     if match:

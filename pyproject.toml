@@ -15,6 +15,9 @@ ocr = [
     "paddleocr>=2.7",
     "paddlepaddle>=2.6",
 ]
+ml = [
+    "scikit-learn>=1.4",
+]
 
 [tool.ruff]
 line-length = 100

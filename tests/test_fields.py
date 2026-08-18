@@ -19,6 +19,12 @@ class ExtractDateTest(unittest.TestCase):
     def test_no_date_returns_empty(self):
         self.assertEqual(extract_date("NO DATE HERE"), "")
 
+    def test_mykad_id_number_embeds_birth_date(self):
+        # MyKad's YYMMDD-PB-#### format is the only place the birth date
+        # appears on most Malaysian cards -- no separate date field.
+        self.assertEqual(extract_date("001230-11-0470"), "2000-12-30")
+        self.assertEqual(extract_date("650211-11-5049"), "1965-02-11")
+
 
 class ExtractNameAddressTest(unittest.TestCase):
     def test_name_picks_longest_letters_only_line(self):
