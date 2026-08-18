@@ -67,8 +67,19 @@ def make_group_split(
     records: Iterable[Record],
     seed: int = 42,
     ratios: tuple[float, float, float] = (0.8, 0.1, 0.1),
+    max_images_per_identity_in_eval: int = 2,
 ) -> dict[str, list[Record]]:
-    """Make a deterministic approximate 80/10/10 split at identity level."""
+    """Make a deterministic approximate 80/10/10 split at identity level.
+
+    Some identities in this dataset are the same physical card retaken 20-40
+    times under different lighting/angle (see the row counts in the ground
+    truth). Grouping by identity already keeps those retakes out of more than
+    one split, but without a cap a single retaken identity can still dominate
+    val/test by row count. ``max_images_per_identity_in_eval`` keeps any
+    identity bigger than that out of val/test entirely (it lands in train,
+    where the extra retakes are useful as lighting/angle variety); only
+    small, close-to-single-shot identities are eligible for val/test.
+    """
 
     records = list(records)
     if not records:
@@ -86,12 +97,19 @@ def make_group_split(
     group_items.sort(key=lambda item: len(item[1]), reverse=True)
 
     split_names = list(SPLITS)
+    eval_splits = {"val", "test"}
     target_sizes = [len(records) * ratio for ratio in ratios]
     result: dict[str, list[Record]] = {name: [] for name in split_names}
     for key, group in group_items:
         del key  # The key is only needed for grouping; records carry the labels.
+        oversized = len(group) > max_images_per_identity_in_eval
+        eligible = [
+            index
+            for index, name in enumerate(split_names)
+            if not (oversized and name in eval_splits)
+        ]
         split_index = min(
-            range(len(split_names)),
+            eligible,
             key=lambda index: len(result[split_names[index]]) - target_sizes[index],
         )
         result[split_names[split_index]].extend(group)
@@ -100,6 +118,19 @@ def make_group_split(
     for split in split_names:
         result[split].sort(key=lambda record: record.filename)
     return result
+
+
+def list_unlabeled_images(image_root: str | Path, records: Iterable[Record]) -> list[str]:
+    """Filenames present under ``image_root`` with no ground-truth row.
+
+    This is the held-out set: no labels exist, so it can never be part of
+    train/val/test scoring. It's meant for a final, small hand-labeled
+    generalization check plus qualitative demo predictions.
+    """
+
+    labeled = {record.filename for record in records}
+    all_images = {path.name for path in Path(image_root).iterdir() if path.is_file()}
+    return sorted(all_images - labeled)
 
 
 def normalize_text(value: str) -> str:

@@ -42,6 +42,20 @@ class MakeGroupSplitTest(unittest.TestCase):
         all_names = [name for names in names_by_split.values() for name in names]
         self.assertEqual(len(all_names), len(set(all_names)))  # no identity in two splits
 
+    def test_oversized_identity_excluded_from_eval_splits(self):
+        from collections import Counter
+
+        from src.ocr_baseline.data import Record
+
+        records = [Record(f"img_{i}.jpg", "A", "1990-01-01", "") for i in range(10)] + [
+            Record(f"img_solo_{i}.jpg", f"P{i}", "1991-01-01", "") for i in range(40)
+        ]
+        splits = make_group_split(records, seed=42, max_images_per_identity_in_eval=2)
+        for split_name in ("val", "test"):
+            counts = Counter(record.name for record in splits[split_name])
+            self.assertTrue(all(count <= 2 for count in counts.values()), counts)
+        self.assertIn("A", {record.name for record in splits["train"]})
+
 
 if __name__ == "__main__":
     unittest.main()
