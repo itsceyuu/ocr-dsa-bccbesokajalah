@@ -37,6 +37,18 @@ def _parse_csv_row(row: list[str]) -> list[str]:
     return row
 
 
+# JUSTYNA AGNIESZKA KRAWCZYK-NOWAK's 19 photos (image_534.jpg..image_552.jpg)
+# were exported with a fake incrementing birth_date (1971-05-13..1971-05-31)
+# instead of the one true date printed on the card. This broke the
+# name+birth_date identity key used for the identity-disjoint split, making
+# one person look like 20 different people. Verified against the physical
+# card in image_533/534/538; the raw export itself is left untouched so the
+# fix stays visible and reviewable here instead of silently baked into data.
+_BIRTH_DATE_FIXES = {
+    f"image_{n}.jpg": "1971-05-12" for n in range(534, 553)
+}
+
+
 def read_ground_truth(path: str | Path) -> list[Record]:
     """Read every row of the dataset's ground truth. No filtering, no subset."""
 
@@ -53,7 +65,9 @@ def read_ground_truth(path: str | Path) -> list[Record]:
             row = _parse_csv_row(raw_row)
             if len(row) < 4:
                 raise ValueError(f"Malformed row {line_number}: expected 4 columns, got {row}")
-            records.append(Record(*(cell.strip() for cell in row[:4])))
+            filename, name, birth_date, address = (cell.strip() for cell in row[:4])
+            birth_date = _BIRTH_DATE_FIXES.get(filename, birth_date)
+            records.append(Record(filename, name, birth_date, address))
     return records
 
 
