@@ -14,3 +14,9 @@ __pycache__/
 .DS_Store
 catboost_info/
 .DS_Store
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.synctex.gz
