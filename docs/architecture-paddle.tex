@@ -1,0 +1,113 @@
+% Pipeline PaddleOCR-only, digambar mengikuti gaya arsitektur bertahap.
+% Kompilasi: pdflatex architecture-paddle.tex
+\documentclass[border=14pt,tikz]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
+\pgfdeclarelayer{bgA}\pgfdeclarelayer{bgB}
+\pgfsetlayers{bgB,bgA,main}
+
+% palet mengikuti diagram sumber
+\definecolor{gGray}  {HTML}{E8EAED}
+\definecolor{gBlueBg}{HTML}{DCEAFB}\definecolor{gBlue}  {HTML}{2E6DB4}\definecolor{gBlueLt}{HTML}{5B9BD5}
+\definecolor{gPurBg} {HTML}{EFE4F7}\definecolor{gPur}   {HTML}{6B3FA0}
+\definecolor{gPinkBg}{HTML}{FBE0E8}\definecolor{gPink}  {HTML}{B03A5B}
+\definecolor{gOrange}{HTML}{C1610E}
+\definecolor{gGreen} {HTML}{2E8B57}
+\definecolor{gCream} {HTML}{FBF3DE}\definecolor{gTan}   {HTML}{A8871F}
+\definecolor{gAmber} {HTML}{E8873C}
+\definecolor{gEdge}  {HTML}{5F6368}
+
+\begin{document}\sffamily
+\begin{tikzpicture}[
+  x=1mm, y=1mm, font=\scriptsize,
+  blk/.style={rounded corners=3pt, draw=none, align=center, text=white,
+              inner sep=3pt, minimum height=8mm, text width=24mm},
+  grp/.style={rounded corners=6pt, dashed, line width=0.7pt, inner sep=5pt},
+  lbl/.style={font=\scriptsize\bfseries, align=center},
+  ar/.style={-{Stealth[length=2.6mm]}, draw=gEdge, line width=0.7pt},
+]
+
+% ============================================================ ROW 1
+% ---- 1. input
+\node[blk, fill=gGray, text=black, text width=21mm, minimum height=14mm] at (0,0) (img)
+  {\textbf{Document}\\\textbf{Image}\\[2pt]{\tiny tanpa preprocessing}};
+
+% ---- 2. feature extraction
+\node[blk, fill=gBlue, text width=26mm] at (50,15) (ocr)
+  {\textbf{PaddleOCR}\\[1pt]{\tiny engine tunggal}};
+\node[lbl, text=white] at (50,3) (exl) {Extraction};
+\node[blk, fill=gBlueLt, text width=15mm, minimum height=6.5mm] at (41,-5) (txt) {Text};
+\node[blk, fill=gBlueLt, text width=15mm, minimum height=6.5mm] at (59,-5) (bbx) {BBox};
+\node[blk, fill=gBlueLt, text width=22mm, minimum height=6.5mm] at (50,-14) (cnf) {Confidence};
+\begin{pgfonlayer}{bgA}
+  \node[rounded corners=4pt, fill=gBlue, inner sep=4pt,
+        fit=(exl)(txt)(bbx)(cnf)] (extbox) {};
+\end{pgfonlayer}
+\node[lbl, text=gBlue] at (50,26) (fel) {Feature Extraction};
+\begin{pgfonlayer}{bgB}
+  \node[grp, draw=gBlue, fill=gBlueBg, fit=(fel)(ocr)(extbox)] (gA) {};
+\end{pgfonlayer}
+
+% ---- 3. document structure analysis
+\node[blk, fill=gPur, text width=28mm] at (105,13) (s1)
+  {Reading Order\\[1pt]{\tiny urut $(y, x)$}};
+\node[blk, fill=gPur, text width=28mm] at (105,0) (s2)
+  {Text Blocks\\[1pt]{\tiny klaster utama kartu}};
+\node[blk, fill=gPur, text width=28mm] at (105,-13) (s3)
+  {Spatial Relations\\[1pt]{\tiny 21 fitur per blok}};
+\node[lbl, text=gPur, text width=32mm] at (105,25) (sl) {Document Structure\\Analysis};
+\begin{pgfonlayer}{bgB}
+  \node[grp, draw=gPur, fill=gPurBg, fit=(sl)(s1)(s2)(s3)] (gB) {};
+\end{pgfonlayer}
+
+% ---- 4. automatic anchor detection
+\node[blk, fill=gPink, text width=30mm] at (155,13) (a1)
+  {Title Anchor\\[1pt]{\tiny blok paling atas}};
+\node[blk, fill=gPink, text width=30mm] at (155,0) (a2)
+  {Date Anchor\\[1pt]{\tiny jarak ke blok berpola tanggal}};
+\node[blk, fill=gPink, text width=30mm] at (155,-13) (a3)
+  {Boilerplate Anchor\\[1pt]{\tiny teks berulang $\geq 15\%$ train}};
+\node[lbl, text=gPink, text width=32mm] at (155,25) (al) {Automatic Anchor\\Detection};
+\begin{pgfonlayer}{bgB}
+  \node[grp, draw=gPink, fill=gPinkBg, fit=(al)(a1)(a2)(a3)] (gC) {};
+\end{pgfonlayer}
+
+% ---- 5. candidate generation
+\node[blk, fill=gOrange, text width=25mm, minimum height=20mm] at (203,0) (cand)
+  {\textbf{Candidate}\\\textbf{Generation}\\[2pt]{\tiny Logistic Regression,\\$P(\mathrm{class}\,|\,\mathrm{block})$,\\tiap blok jadi kandidat}};
+
+% ============================================================ ROW 2
+% ---- 6. scoring and validation
+\node[blk, fill=gGreen, text width=25mm, minimum height=20mm] at (203,-52) (score)
+  {\textbf{Scoring \&}\\\textbf{Validation}\\[2pt]{\tiny eksklusi keras, eksklusivitas field, klaster kedekatan, \textit{extract\_date()}}};
+
+% ---- 7. output fields
+\node[blk, fill=gTan, text width=20mm] at (98,-52)  (fname)  {Name};
+\node[blk, fill=gTan, text width=20mm] at (124,-52) (fbod)   {Birth Date};
+\node[blk, fill=gTan, text width=20mm] at (150,-52) (faddr)  {Address};
+\node[lbl, text=gTan] at (124,-42) (ol) {Output Fields};
+\begin{pgfonlayer}{bgB}
+  \node[grp, draw=gTan, fill=gCream, fit=(ol)(fname)(fbod)(faddr)] (gD) {};
+\end{pgfonlayer}
+
+% ---- 8. schema normalization
+\node[blk, fill=gAmber, text width=28mm, minimum height=13mm] at (48,-52) (norm)
+  {\textbf{Schema Normalization}\\[1pt]{\tiny \textit{normalize\_text()},\\tanggal ISO 8601}};
+
+% ============================================================ arrows
+\draw[ar] (img.east)   -- (gA.west);
+\draw[ar] (ocr.south)  -- (extbox.north);
+\draw[ar] (gA.east)    -- (gB.west);
+\draw[ar] (gB.east)    -- (gC.west);
+\draw[ar] (gC.east)    -- (cand.west);
+\draw[ar] (cand.south) -- (score.north);
+\draw[ar] (score.west) -- (gD.east);
+\draw[ar] (gD.west)    -- (norm.east);
+\draw[ar] (s1) -- (s2);
+\draw[ar] (s2) -- (s3);
+\draw[ar] (a1) -- (a2);
+\draw[ar] (a2) -- (a3);
+
+\end{tikzpicture}
+\end{document}
