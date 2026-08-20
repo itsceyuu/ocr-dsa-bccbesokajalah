@@ -54,8 +54,20 @@ class Prediction:
         return asdict(self)
 
 
-def predict_record(engine: BaseEngine, image_root: Path, record: Record) -> Prediction:
+def predict_record(
+    engine: BaseEngine, image_root: Path, record: Record, preprocess: str = "none"
+) -> Prediction:
     image = Image.open(image_root / record.filename).convert("RGB")
+    if preprocess != "none":
+        from . import preprocess as pp
+
+        transform = {
+            "grayscale": pp.grayscale_image,
+            "perspective": pp.perspective_correct_image,
+            "perspective-hough": pp.perspective_correct_image_hough,
+            "perspective-ldrnet": pp.perspective_correct_image_ldrnet,
+        }.get(preprocess, pp.preprocess_image)
+        image = transform(image).convert("RGB")
     ocr_result = engine.predict(image)
     raw_result = dict(ocr_result.raw)
     predicted = parse_fields(str(raw_result.get("full", "")))
@@ -124,10 +136,11 @@ def run_evaluation(
     records: list[Record],
     image_root: Path,
     output_path: Path,
+    preprocess: str = "none",
 ) -> dict[str, object]:
     predictions = []
     for index, record in enumerate(records, start=1):
-        predictions.append(predict_record(engine, image_root, record))
+        predictions.append(predict_record(engine, image_root, record, preprocess=preprocess))
         if index == 1 or index % 25 == 0 or index == len(records):
             print(f"processed {index}/{len(records)}", flush=True)
 

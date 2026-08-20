@@ -56,6 +56,19 @@ class MakeGroupSplitTest(unittest.TestCase):
             self.assertTrue(all(count <= 2 for count in counts.values()), counts)
         self.assertIn("A", {record.name for record in splits["train"]})
 
+    def test_reserves_address_bearing_identities_for_train(self):
+        from src.ocr_baseline.data import Record
+
+        # One huge no-address batch alone covers train's ~80% row target, so
+        # without the reservation every small address-bearing identity would
+        # get pushed to eval by the row-count greedy rule.
+        records = [Record(f"img_big_{i}.jpg", "BIG", "1990-01-01", "") for i in range(400)] + [
+            Record(f"img_small_{i}.jpg", f"P{i}", "1991-01-01", "123 Main St") for i in range(100)
+        ]
+        splits = make_group_split(records, seed=42, min_train_address_identities=15)
+        train_address_rows = sum(1 for r in splits["train"] if r.address)
+        self.assertGreaterEqual(train_address_rows, 15)
+
 
 if __name__ == "__main__":
     unittest.main()

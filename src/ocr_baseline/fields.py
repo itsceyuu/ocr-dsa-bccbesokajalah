@@ -33,11 +33,22 @@ _NUMERIC_DATE_RE = re.compile(r"\b(?P<a>\d{1,2})[.\-/](?P<b>\d{1,2})[.\-/](?P<c>
 _MYKAD_ID_RE = re.compile(r"\b(?P<y>\d{2})(?P<m>\d{2})(?P<d>\d{2})-\d{2}-\d{4}\b")
 
 _ADDRESS_KEYWORDS = (
-    "JALAN", "KAMPUNG", "TAMAN", "STREET", "STRASSE", "AVENUE", "ROAD", "RUA", "VIA",
+    "JALAN", "KAMPUNG", "TAMAN", "STREET", "STRASSE", "AVENUE", "ROAD", "RUA", "VIA", "LORONG",
 )
 _NAME_STOPWORDS = {
     "MALAYSIA", "MYKAD", "MYKID", "IDENTITY", "WARGANEGARA", "ISLAM", "LELAKI",
     "PEREMPUAN", "PASSPORT", "REPUBLIC", "LICENCE", "LICENSE", "SPECIMEN",
+    # Whole-block boilerplate confirmed (via direct evidence, not guessed)
+    # to get picked as `name` in predict_fields_geo: card headers, MyKid's
+    # birth-registration line, and other recurring form-field text. Spaced
+    # and OCR-glued (no-space) variants both included since normalize_text
+    # doesn't insert missing spaces.
+    "KAD PENGENALAN", "KADPENGENALAN", "IDENTITY CARD", "IDENTITYCARD",
+    "NO DAFTAR KELAHIRAN", "PEMASTAUTIN TETAP", "NEGERI LAHIR", "INITIAL",
+    # A specific recurring verification/remittance-slip template photographed
+    # alongside some cards -- "ACKNOWLEDGMENT SENT" confirmed verbatim in 4+
+    # separate images, now leaking into `address` post-fix instead of `name`.
+    "ACKNOWLEDGMENT SENT", "IMMEDIATE ADVISE", "DATE", "RM", "RATE",
 }
 
 

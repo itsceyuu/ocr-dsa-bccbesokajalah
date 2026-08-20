@@ -45,13 +45,19 @@ def main() -> None:
     parser.add_argument("--output-dir", default="reports")
     parser.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda"])
     parser.add_argument("--method", default="baseline0-regex", help="Tag identifying the extraction approach")
+    parser.add_argument(
+        "--preprocess", default="none",
+        choices=["none", "grayscale", "perspective", "perspective-hough", "perspective-ldrnet", "full"],
+        help="none | grayscale | perspective (contour/hough/ldrnet) | full, see preprocess.py",
+    )
     args = parser.parse_args()
 
     records = read_split(Path(args.split_dir) / f"{args.split}.csv")
     engine = build_engine(args.engine, device=args.device)
     output_dir = Path(args.output_dir)
-    output_path = output_dir / f"{args.engine}_{args.split}.json"
-    report = run_evaluation(engine, records, Path(args.image_root), output_path)
+    suffix = f"_{args.preprocess}" if args.preprocess != "none" else ""
+    output_path = output_dir / f"{args.engine}_{args.split}{suffix}.json"
+    report = run_evaluation(engine, records, Path(args.image_root), output_path, preprocess=args.preprocess)
     log_experiment(output_dir, args.engine, args.split, args.method, report["metrics"])
     print(json.dumps(report["metrics"], indent=2))
 

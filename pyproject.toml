@@ -14,6 +14,7 @@ ocr = [
     "easyocr>=1.7.2",
     "paddleocr>=2.7",
     "paddlepaddle>=2.6",
+    "opencv-python-headless>=4.8",
 ]
 ml = [
     "scikit-learn>=1.4",
