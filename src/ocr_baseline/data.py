@@ -68,6 +68,7 @@ def make_group_split(
     seed: int = 42,
     ratios: tuple[float, float, float] = (0.8, 0.1, 0.1),
     max_images_per_identity_in_eval: int = 2,
+    min_train_address_identities: int = 15,
 ) -> dict[str, list[Record]]:
     """Make a deterministic approximate 80/10/10 split at identity level.
 
@@ -79,6 +80,14 @@ def make_group_split(
     identity bigger than that out of val/test entirely (it lands in train,
     where the extra retakes are useful as lighting/angle variety); only
     small, close-to-single-shot identities are eligible for val/test.
+
+    Only a minority of identities (the large international specimen/passport
+    batches) are big enough to fill train's row-count target on their own --
+    if they do, every small identity (which is where almost all non-empty
+    `address` values live, one MyKad per person) gets pushed to eval by the
+    row-count greedy rule below, leaving train with zero address training
+    signal purely by chance. `min_train_address_identities` reserves that
+    many address-bearing identities for train up front so this can't happen.
     """
 
     records = list(records)
@@ -94,6 +103,10 @@ def make_group_split(
     rng = random.Random(seed)
     group_items = list(groups.items())
     rng.shuffle(group_items)
+
+    address_bearing_keys = [key for key, group in group_items if any(r.address for r in group)]
+    reserved_for_train = set(address_bearing_keys[:min_train_address_identities])
+
     group_items.sort(key=lambda item: len(item[1]), reverse=True)
 
     split_names = list(SPLITS)
@@ -101,7 +114,9 @@ def make_group_split(
     target_sizes = [len(records) * ratio for ratio in ratios]
     result: dict[str, list[Record]] = {name: [] for name in split_names}
     for key, group in group_items:
-        del key  # The key is only needed for grouping; records carry the labels.
+        if key in reserved_for_train:
+            result["train"].extend(group)
+            continue
         oversized = len(group) > max_images_per_identity_in_eval
         eligible = [
             index

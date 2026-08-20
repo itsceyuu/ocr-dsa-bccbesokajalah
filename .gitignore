@@ -5,9 +5,11 @@ data/
 reports/*
 # ...except the experiment log: aggregate metrics only, no predictions/PII.
 !reports/experiments.jsonl
+!reports/experiments.xlsx
 
 __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
 .DS_Store
+catboost_info/
